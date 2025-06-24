@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dictée Vocale</title>
+<link href="microphone-icon.png" rel="icon" type="image/png"/>
+<style>
+   /* styles existants */
+ </style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dictée Vocale</title>
+<style>
+        body {
+            font-family: Aptos;
+            margin: 20px;
+        }
+        textarea {
+  	font-size: 16px;
+	font-family: Calibri;
+            width: 100%;
+            height: 300px;
+            margin-bottom: 10px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px;
+            font-size: 20px;
+        }
+        .icon {
+            margin-right: 5px;
+        }
+    </style>
+<style>
+body {
+  font-family: "Salesforce Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background-color: #f4f6f9;
+  color: #032d60;
+  margin: 20px;
+}
+
+h1 {
+  color: #0176d3;
+}
+
+textarea {
+  font-size: 16px;
+  font-family: "Salesforce Sans", Calibri, sans-serif;
+  width: 50%;
+  height: 300px;
+  margin-bottom: 10px;
+  border: 1px solid #d8dde6;
+  border-radius: 4px;
+  padding: 10px;
+  background-color: white;
+}
+
+button {
+  margin: 5px;
+  padding: 10px 15px;
+  font-size: 18px;
+  background-color: #0176d3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #005fb2;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.icon {
+  margin-right: 5px;
+}
+
+#startStopBtn.active {
+  background-color: #e60000;
+  color: white;
+}
+</style></head>
+<body>
+<h1>Dictée Vocale</h1>
+<textarea id="textArea" placeholder="Votre texte ici..."></textarea><br/>
+<button id="startStopBtn"><span class="icon">🎤</span></button>
+<button id="newLineBtn"><span class="icon">↵</span></button>
+<button id="copyBtn"><span class="icon">📋</span></button>
+<button id="clearBtn"><span class="icon">🗑️</span></button>
+<button id="saveBtn"><span class="icon">💾</span></button>
+<label>
+<input id="punctuationToggle" type="checkbox"/> Désactiver la ponctuation automatique
+    </label>
+<script>
+        let recognizing = false;
+        let recognition = null;
+
+        if (!('webkitSpeechRecognition' in window)) {
+            alert("Votre navigateur ne supporte pas la reconnaissance vocale. Veuillez utiliser Google Chrome.");
+        } else {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = "fr-FR";
+
+            recognition.onstart = function() {
+  document.getElementById('startStopBtn').classList.add('active');
+                recognizing = true;
+                document.getElementById("startStopBtn");
+            };
+
+            recognition.onend = function() {
+  document.getElementById('startStopBtn').classList.remove('active');
+                recognizing = false;
+                document.getElementById("startStopBtn");
+            };
+
+            recognition.onresult = function(event) {
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    }
+                }
+                if (document.getElementById("punctuationToggle").checked) {
+                    finalTranscript = finalTranscript.replace(/[.,!?]/g, '');
+                }
+                document.getElementById("textArea").value += finalTranscript;
+            };
+        }
+
+        document.getElementById("startStopBtn").onclick = function() {
+            if (recognizing) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        };
+
+        document.getElementById("newLineBtn").onclick = function() {
+            document.getElementById("textArea").value += '\n';
+        };
+
+        document.getElementById("copyBtn").onclick = function() {
+            const textArea = document.getElementById("textArea");
+            textArea.select();
+            document.execCommand("copy");
+        };
+
+        document.getElementById("clearBtn").onclick = function() {
+            document.getElementById("textArea").value = '';
+        };
+
+        document.getElementById("saveBtn").onclick = function() {
+            const text = document.getElementById("textArea").value;
+            const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "dictée_vocale.txt";
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+    </script>
+</body>
+</html>
